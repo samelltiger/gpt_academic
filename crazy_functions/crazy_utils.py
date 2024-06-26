@@ -619,3 +619,71 @@ def get_plugin_arg(plugin_kwargs, key, default):
     if (key in plugin_kwargs) and (plugin_kwargs[key] == ""): plugin_kwargs.pop(key)
     # 正常情况
     return plugin_kwargs.get(key, default)
+
+
+
+def parse_pdf(file_name, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt):
+    import tiktoken
+    print('begin analysis on:', file_name)
+
+    ############################## <第 0 步，切割PDF> ##################################
+    # 递归地切割PDF文件，每一块（尽量是完整的一个section，比如introduction，experiment等，必要时再进行切割）
+    # 的长度必须小于 2500 个 Token
+    file_content, page_one = read_and_clean_pdf_text(file_name) # （尝试）按照章节切割PDF
+    file_content = file_content.encode('utf-8', 'ignore').decode()   # avoid reading non-utf8 chars
+    page_one = str(page_one).encode('utf-8', 'ignore').decode()  # avoid reading non-utf8 chars
+
+    TOKEN_LIMIT_PER_FRAGMENT = 1200
+
+    from crazy_functions.pdf_fns.breakdown_txt import breakdown_text_to_satisfy_token_limit
+    paper_fragments = breakdown_text_to_satisfy_token_limit(
+        txt=file_content, limit=TOKEN_LIMIT_PER_FRAGMENT,
+        llm_model=llm_kwargs['llm_model']
+    )
+    page_one_fragments = breakdown_text_to_satisfy_token_limit(
+        txt=str(page_one), limit=TOKEN_LIMIT_PER_FRAGMENT//4,
+        llm_model=llm_kwargs['llm_model']
+    )
+    # 为了更好的效果，我们剥离Introduction之后的部分（如果有）
+    paper_meta = page_one_fragments[0].split('introduction')[0].split('Introduction')[0].split('INTRODUCTION')[0]
+
+    ############################## <第 1 步，从摘要中提取高价值信息，放到history中> ##################################
+    final_results = []
+    final_results.append(paper_meta)
+
+    ############################## <第 2 步，迭代地历遍整个文章，提取精炼信息> ##################################
+    # i_say_show_user = f'首先你在英文语境下通读整篇论文。'; gpt_say = "[Local Message] 收到。"           # 用户提示
+    # chatbot.append([i_say_show_user, gpt_say]); yield from update_ui(chatbot=chatbot, history=[])    # 更新UI
+
+    # n_fragment = len(paper_fragments)
+    # print("n_fragment: ", n_fragment)
+    # for text in paper_fragments:
+    #     print('=='*20, ' length: ', len(text))
+    #     print(text)
+    #     print('=='*20)
+
+    return paper_fragments
+
+    # for i in range(n_fragment):
+    #     NUM_OF_WORD = MAX_WORD_TOTAL // n_fragment
+    #     i_say = f"Read this section, recapitulate the content of this section with less than {NUM_OF_WORD} words: {paper_fragments[i]}"
+    #     i_say_show_user = f"[{i+1}/{n_fragment}] Read this section, recapitulate the content of this section with less than {NUM_OF_WORD} words: {paper_fragments[i][:200]} ...."
+    #     gpt_say = yield from request_gpt_model_in_new_thread_with_ui_alive(i_say, i_say_show_user,  # i_say=真正给chatgpt的提问， i_say_show_user=给用户看的提问
+    #                                                                        llm_kwargs, chatbot,
+    #                                                                        history=["The main idea of the previous section is?", last_iteration_result], # 迭代上一次的结果
+    #                                                                        sys_prompt="Extract the main idea of this section, answer me with Chinese."  # 提示
+    #                                                                     )
+    #     iteration_results.append(gpt_say)
+    #     last_iteration_result = gpt_say
+    #
+    # ############################# <第 3 步，整理history> ##################################
+    # final_results.extend(iteration_results)
+    # final_results.append(f'接下来，你是一名专业的学术教授，利用以上信息，使用中文回答我的问题。')
+    # # 接下来两句话只显示在界面上，不起实际作用
+    # i_say_show_user = f'接下来，你是一名专业的学术教授，利用以上信息，使用中文回答我的问题。'; gpt_say = "[Local Message] 收到。"
+    # chatbot.append([i_say_show_user, gpt_say])
+    #
+    # ############################# <第 4 步，设置一个token上限，防止回答时Token溢出> ##################################
+    # from .crazy_utils import input_clipping
+    # _, final_results = input_clipping("", final_results, max_token_limit=3200)
+    # yield from update_ui(chatbot=chatbot, history=final_results) # 注意这里的历史记录被替代了

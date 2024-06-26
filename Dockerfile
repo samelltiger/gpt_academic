@@ -3,7 +3,7 @@
 # - 如何构建: 先修改 `config.py`， 然后 `docker build -t gpt-academic . `
 # - 如何运行(Linux下): `docker run --rm -it --net=host gpt-academic `
 # - 如何运行(其他操作系统，选择任意一个固定端口50923): `docker run --rm -it -e WEB_PORT=50923 -p 50923:50923 gpt-academic `
-FROM python:3.11
+FROM 192.168.0.110:8018/docker-proxy/python:3.11
 
 
 # 非必要步骤，更换pip源 （以下三行，可以删除）
@@ -23,12 +23,12 @@ WORKDIR /gpt
 
 # 安装大部分依赖，利用Docker缓存加速以后的构建 （以下两行，可以删除）
 COPY requirements.txt ./
-RUN pip3 install -r requirements.txt
+RUN pip3 install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
 
 
 # 装载项目文件，安装剩余依赖（必要）
 COPY . .
-RUN pip3 install -r requirements.txt
+RUN pip3 install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
 
 
 # 非必要步骤，用于预热模块（可以删除）
