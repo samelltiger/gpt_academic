@@ -1,4 +1,3 @@
-
 """
     该文件中主要包含2个函数，是所有LLM的通用接口，它们会继续向下调用更底层的LLM模型，处理多模型并行等细节
 
@@ -29,7 +28,7 @@ from .bridge_qianfan import predict_no_ui_long_connection as qianfan_noui
 from .bridge_qianfan import predict as qianfan_ui
 
 from .bridge_google_gemini import predict as genai_ui
-from .bridge_google_gemini import predict_no_ui_long_connection  as genai_noui
+from .bridge_google_gemini import predict_no_ui_long_connection as genai_noui
 
 from .bridge_zhipu import predict_no_ui_long_connection as zhipu_noui
 from .bridge_zhipu import predict as zhipu_ui
@@ -43,6 +42,7 @@ from .bridge_cohere import predict_no_ui_long_connection as cohere_noui
 from .oai_std_model_template import get_predict_function
 
 colors = ['#FF00FF', '#00FFFF', '#FF0000', '#990099', '#009999', '#990044']
+
 
 class LazyloadTiktoken(object):
     def __init__(self, model):
@@ -63,6 +63,7 @@ class LazyloadTiktoken(object):
     def decode(self, *args, **kwargs):
         encoder = self.get_encoder(self.model)
         return encoder.decode(*args, **kwargs)
+
 
 # Endpoint 重定向
 API_URL_REDIRECT, AZURE_ENDPOINT, AZURE_ENGINE = get_conf("API_URL_REDIRECT", "AZURE_ENDPOINT", "AZURE_ENGINE")
@@ -102,7 +103,6 @@ tokenizer_gpt35 = LazyloadTiktoken("gpt-3.5-turbo")
 tokenizer_gpt4 = LazyloadTiktoken("gpt-4")
 get_token_num_gpt35 = lambda txt: len(tokenizer_gpt35.encode(txt, disallowed_special=()))
 get_token_num_gpt4 = lambda txt: len(tokenizer_gpt4.encode(txt, disallowed_special=()))
-
 
 # 开始初始化模型
 AVAIL_LLM_MODELS, LLM_MODEL = get_conf("AVAIL_LLM_MODELS", "LLM_MODEL")
@@ -155,7 +155,7 @@ model_info = {
         "token_cnt": get_token_num_gpt35,
     },
 
-    "gpt-3.5-turbo-1106": { #16k
+    "gpt-3.5-turbo-1106": {  # 16k
         "fn_with_ui": chatgpt_ui,
         "fn_without_ui": chatgpt_noui,
         "endpoint": openai_endpoint,
@@ -164,7 +164,7 @@ model_info = {
         "token_cnt": get_token_num_gpt35,
     },
 
-    "gpt-3.5-turbo-0125": { #16k
+    "gpt-3.5-turbo-0125": {  # 16k
         "fn_with_ui": chatgpt_ui,
         "fn_without_ui": chatgpt_noui,
         "endpoint": openai_endpoint,
@@ -258,7 +258,6 @@ model_info = {
         "token_cnt": get_token_num_gpt4,
     },
 
-
     "gpt-3.5-random": {
         "fn_with_ui": chatgpt_ui,
         "fn_without_ui": chatgpt_noui,
@@ -277,9 +276,8 @@ model_info = {
         "token_cnt": get_token_num_gpt4,
     },
 
-
     # azure openai
-    "azure-gpt-3.5":{
+    "azure-gpt-3.5": {
         "fn_with_ui": chatgpt_ui,
         "fn_without_ui": chatgpt_noui,
         "endpoint": azure_endpoint,
@@ -288,7 +286,7 @@ model_info = {
         "token_cnt": get_token_num_gpt35,
     },
 
-    "azure-gpt-4":{
+    "azure-gpt-4": {
         "fn_with_ui": chatgpt_ui,
         "fn_without_ui": chatgpt_noui,
         "endpoint": azure_endpoint,
@@ -331,12 +329,12 @@ model_info = {
         "token_cnt": get_token_num_gpt35,
     },
     "glm-4-flash": {
-         "fn_with_ui": zhipu_ui,
+        "fn_with_ui": zhipu_ui,
         "fn_without_ui": zhipu_noui,
         "endpoint": None,
         "max_token": 10124 * 8,
         "tokenizer": tokenizer_gpt35,
-        "token_cnt": get_token_num_gpt35,       
+        "token_cnt": get_token_num_gpt35,
     },
     "glm-4v": {
         "fn_with_ui": zhipu_ui,
@@ -430,6 +428,7 @@ model_info = {
 # -=-=-=-=-=-=- 月之暗面 -=-=-=-=-=-=-
 from request_llms.bridge_moonshot import predict as moonshot_ui
 from request_llms.bridge_moonshot import predict_no_ui_long_connection as moonshot_no_ui
+
 model_info.update({
     "moonshot-v1-8k": {
         "fn_with_ui": moonshot_ui,
@@ -461,24 +460,26 @@ model_info.update({
 })
 # -=-=-=-=-=-=- api2d 对齐支持 -=-=-=-=-=-=-
 for model in AVAIL_LLM_MODELS:
-    if model.startswith('api2d-') and (model.replace('api2d-','') in model_info.keys()):
-        mi = copy.deepcopy(model_info[model.replace('api2d-','')])
+    if model.startswith('api2d-') and (model.replace('api2d-', '') in model_info.keys()):
+        mi = copy.deepcopy(model_info[model.replace('api2d-', '')])
         mi.update({"endpoint": api2d_endpoint})
         model_info.update({model: mi})
 
 # -=-=-=-=-=-=- azure 对齐支持 -=-=-=-=-=-=-
 for model in AVAIL_LLM_MODELS:
-    if model.startswith('azure-') and (model.replace('azure-','') in model_info.keys()):
-        mi = copy.deepcopy(model_info[model.replace('azure-','')])
+    if model.startswith('azure-') and (model.replace('azure-', '') in model_info.keys()):
+        mi = copy.deepcopy(model_info[model.replace('azure-', '')])
         mi.update({"endpoint": azure_endpoint})
         model_info.update({model: mi})
 
 # -=-=-=-=-=-=- 以下部分是新加入的模型，可能附带额外依赖 -=-=-=-=-=-=-
 # claude家族
-claude_models = ["claude-instant-1.2","claude-2.0","claude-2.1","claude-3-haiku-20240307","claude-3-sonnet-20240229","claude-3-opus-20240229"]
+claude_models = ["claude-instant-1.2", "claude-2.0", "claude-2.1", "claude-3-haiku-20240307",
+                 "claude-3-sonnet-20240229", "claude-3-opus-20240229"]
 if any(item in claude_models for item in AVAIL_LLM_MODELS):
     from .bridge_claude import predict_no_ui_long_connection as claude_noui
     from .bridge_claude import predict as claude_ui
+
     model_info.update({
         "claude-instant-1.2": {
             "fn_with_ui": claude_ui,
@@ -542,6 +543,7 @@ if any(item in claude_models for item in AVAIL_LLM_MODELS):
 if "jittorllms_rwkv" in AVAIL_LLM_MODELS:
     from .bridge_jittorllms_rwkv import predict_no_ui_long_connection as rwkv_noui
     from .bridge_jittorllms_rwkv import predict as rwkv_ui
+
     model_info.update({
         "jittorllms_rwkv": {
             "fn_with_ui": rwkv_ui,
@@ -555,6 +557,7 @@ if "jittorllms_rwkv" in AVAIL_LLM_MODELS:
 if "jittorllms_llama" in AVAIL_LLM_MODELS:
     from .bridge_jittorllms_llama import predict_no_ui_long_connection as llama_noui
     from .bridge_jittorllms_llama import predict as llama_ui
+
     model_info.update({
         "jittorllms_llama": {
             "fn_with_ui": llama_ui,
@@ -568,6 +571,7 @@ if "jittorllms_llama" in AVAIL_LLM_MODELS:
 if "jittorllms_pangualpha" in AVAIL_LLM_MODELS:
     from .bridge_jittorllms_pangualpha import predict_no_ui_long_connection as pangualpha_noui
     from .bridge_jittorllms_pangualpha import predict as pangualpha_ui
+
     model_info.update({
         "jittorllms_pangualpha": {
             "fn_with_ui": pangualpha_ui,
@@ -581,6 +585,7 @@ if "jittorllms_pangualpha" in AVAIL_LLM_MODELS:
 if "moss" in AVAIL_LLM_MODELS:
     from .bridge_moss import predict_no_ui_long_connection as moss_noui
     from .bridge_moss import predict as moss_ui
+
     model_info.update({
         "moss": {
             "fn_with_ui": moss_ui,
@@ -594,6 +599,7 @@ if "moss" in AVAIL_LLM_MODELS:
 if "stack-claude" in AVAIL_LLM_MODELS:
     from .bridge_stackclaude import predict_no_ui_long_connection as claude_noui
     from .bridge_stackclaude import predict as claude_ui
+
     model_info.update({
         "stack-claude": {
             "fn_with_ui": claude_ui,
@@ -604,10 +610,11 @@ if "stack-claude" in AVAIL_LLM_MODELS:
             "token_cnt": get_token_num_gpt35,
         }
     })
-if "newbing" in AVAIL_LLM_MODELS:   # same with newbing-free
+if "newbing" in AVAIL_LLM_MODELS:  # same with newbing-free
     try:
         from .bridge_newbingfree import predict_no_ui_long_connection as newbingfree_noui
         from .bridge_newbingfree import predict as newbingfree_ui
+
         model_info.update({
             "newbing": {
                 "fn_with_ui": newbingfree_ui,
@@ -620,10 +627,11 @@ if "newbing" in AVAIL_LLM_MODELS:   # same with newbing-free
         })
     except:
         print(trimmed_format_exc())
-if "chatglmft" in AVAIL_LLM_MODELS:   # same with newbing-free
+if "chatglmft" in AVAIL_LLM_MODELS:  # same with newbing-free
     try:
         from .bridge_chatglmft import predict_no_ui_long_connection as chatglmft_noui
         from .bridge_chatglmft import predict as chatglmft_ui
+
         model_info.update({
             "chatglmft": {
                 "fn_with_ui": chatglmft_ui,
@@ -641,6 +649,7 @@ if "internlm" in AVAIL_LLM_MODELS:
     try:
         from .bridge_internlm import predict_no_ui_long_connection as internlm_noui
         from .bridge_internlm import predict as internlm_ui
+
         model_info.update({
             "internlm": {
                 "fn_with_ui": internlm_ui,
@@ -657,6 +666,7 @@ if "chatglm_onnx" in AVAIL_LLM_MODELS:
     try:
         from .bridge_chatglmonnx import predict_no_ui_long_connection as chatglm_onnx_noui
         from .bridge_chatglmonnx import predict as chatglm_onnx_ui
+
         model_info.update({
             "chatglm_onnx": {
                 "fn_with_ui": chatglm_onnx_ui,
@@ -674,6 +684,7 @@ if "qwen-local" in AVAIL_LLM_MODELS:
     try:
         from .bridge_qwen_local import predict_no_ui_long_connection as qwen_local_noui
         from .bridge_qwen_local import predict as qwen_local_ui
+
         model_info.update({
             "qwen-local": {
                 "fn_with_ui": qwen_local_ui,
@@ -688,10 +699,11 @@ if "qwen-local" in AVAIL_LLM_MODELS:
     except:
         print(trimmed_format_exc())
 # -=-=-=-=-=-=- 通义-在线模型 -=-=-=-=-=-=-
-if "qwen-turbo" in AVAIL_LLM_MODELS or "qwen-plus" in AVAIL_LLM_MODELS or "qwen-max" in AVAIL_LLM_MODELS:   # zhipuai
+if "qwen-turbo" in AVAIL_LLM_MODELS or "qwen-plus" in AVAIL_LLM_MODELS or "qwen-max" in AVAIL_LLM_MODELS:  # zhipuai
     try:
         from .bridge_qwen import predict_no_ui_long_connection as qwen_noui
         from .bridge_qwen import predict as qwen_ui
+
         model_info.update({
             "qwen-turbo": {
                 "fn_with_ui": qwen_ui,
@@ -724,18 +736,19 @@ if "qwen-turbo" in AVAIL_LLM_MODELS or "qwen-plus" in AVAIL_LLM_MODELS or "qwen-
     except:
         print(trimmed_format_exc())
 # -=-=-=-=-=-=- 零一万物模型 -=-=-=-=-=-=-
-yi_models = ["yi-34b-chat-0205","yi-34b-chat-200k","yi-large","yi-medium","yi-spark","yi-large-turbo","yi-large-preview"]
+yi_models = ["yi-34b-chat-0205", "yi-34b-chat-200k", "yi-large", "yi-medium", "yi-spark", "yi-large-turbo",
+             "yi-large-preview"]
 if any(item in yi_models for item in AVAIL_LLM_MODELS):
     try:
         yimodel_4k_noui, yimodel_4k_ui = get_predict_function(
             api_key_conf_name="YIMODEL_API_KEY", max_output_token=600, disable_proxy=False
-            )
+        )
         yimodel_16k_noui, yimodel_16k_ui = get_predict_function(
             api_key_conf_name="YIMODEL_API_KEY", max_output_token=4000, disable_proxy=False
-            )
+        )
         yimodel_200k_noui, yimodel_200k_ui = get_predict_function(
             api_key_conf_name="YIMODEL_API_KEY", max_output_token=4096, disable_proxy=False
-            )
+        )
         model_info.update({
             "yi-34b-chat-0205": {
                 "fn_with_ui": yimodel_4k_ui,
@@ -808,6 +821,7 @@ if "spark" in AVAIL_LLM_MODELS:
     try:
         from .bridge_spark import predict_no_ui_long_connection as spark_noui
         from .bridge_spark import predict as spark_ui
+
         model_info.update({
             "spark": {
                 "fn_with_ui": spark_ui,
@@ -821,10 +835,11 @@ if "spark" in AVAIL_LLM_MODELS:
         })
     except:
         print(trimmed_format_exc())
-if "sparkv2" in AVAIL_LLM_MODELS:   # 讯飞星火认知大模型
+if "sparkv2" in AVAIL_LLM_MODELS:  # 讯飞星火认知大模型
     try:
         from .bridge_spark import predict_no_ui_long_connection as spark_noui
         from .bridge_spark import predict as spark_ui
+
         model_info.update({
             "sparkv2": {
                 "fn_with_ui": spark_ui,
@@ -838,10 +853,11 @@ if "sparkv2" in AVAIL_LLM_MODELS:   # 讯飞星火认知大模型
         })
     except:
         print(trimmed_format_exc())
-if "sparkv3" in AVAIL_LLM_MODELS or "sparkv3.5" in AVAIL_LLM_MODELS:   # 讯飞星火认知大模型
+if "sparkv3" in AVAIL_LLM_MODELS or "sparkv3.5" in AVAIL_LLM_MODELS:  # 讯飞星火认知大模型
     try:
         from .bridge_spark import predict_no_ui_long_connection as spark_noui
         from .bridge_spark import predict as spark_ui
+
         model_info.update({
             "sparkv3": {
                 "fn_with_ui": spark_ui,
@@ -873,10 +889,11 @@ if "sparkv3" in AVAIL_LLM_MODELS or "sparkv3.5" in AVAIL_LLM_MODELS:   # 讯飞�
         })
     except:
         print(trimmed_format_exc())
-if "llama2" in AVAIL_LLM_MODELS:   # llama2
+if "llama2" in AVAIL_LLM_MODELS:  # llama2
     try:
         from .bridge_llama2 import predict_no_ui_long_connection as llama2_noui
         from .bridge_llama2 import predict as llama2_ui
+
         model_info.update({
             "llama2": {
                 "fn_with_ui": llama2_ui,
@@ -890,7 +907,7 @@ if "llama2" in AVAIL_LLM_MODELS:   # llama2
     except:
         print(trimmed_format_exc())
 # -=-=-=-=-=-=- 智谱 -=-=-=-=-=-=-
-if "zhipuai" in AVAIL_LLM_MODELS:   # zhipuai 是glm-4的别名，向后兼容配置
+if "zhipuai" in AVAIL_LLM_MODELS:  # zhipuai 是glm-4的别名，向后兼容配置
     try:
         model_info.update({
             "zhipuai": {
@@ -905,10 +922,11 @@ if "zhipuai" in AVAIL_LLM_MODELS:   # zhipuai 是glm-4的别名，向后兼容�
     except:
         print(trimmed_format_exc())
 # -=-=-=-=-=-=- 幻方-深度求索大模型 -=-=-=-=-=-=-
-if "deepseekcoder" in AVAIL_LLM_MODELS:   # deepseekcoder
+if "deepseekcoder" in AVAIL_LLM_MODELS:  # deepseekcoder
     try:
         from .bridge_deepseekcoder import predict_no_ui_long_connection as deepseekcoder_noui
         from .bridge_deepseekcoder import predict as deepseekcoder_ui
+
         model_info.update({
             "deepseekcoder": {
                 "fn_with_ui": deepseekcoder_ui,
@@ -926,9 +944,9 @@ if "deepseek-chat" in AVAIL_LLM_MODELS or "deepseek-coder" in AVAIL_LLM_MODELS:
     try:
         deepseekapi_noui, deepseekapi_ui = get_predict_function(
             api_key_conf_name="DEEPSEEK_API_KEY", max_output_token=4096, disable_proxy=False
-            )
+        )
         model_info.update({
-            "deepseek-chat":{
+            "deepseek-chat": {
                 "fn_with_ui": deepseekapi_ui,
                 "fn_without_ui": deepseekapi_noui,
                 "endpoint": deepseekapi_endpoint,
@@ -937,7 +955,7 @@ if "deepseek-chat" in AVAIL_LLM_MODELS or "deepseek-coder" in AVAIL_LLM_MODELS:
                 "tokenizer": tokenizer_gpt35,
                 "token_cnt": get_token_num_gpt35,
             },
-            "deepseek-coder":{
+            "deepseek-coder": {
                 "fn_with_ui": deepseekapi_ui,
                 "fn_without_ui": deepseekapi_noui,
                 "endpoint": deepseekapi_endpoint,
@@ -1009,6 +1027,7 @@ for model in [m for m in AVAIL_LLM_MODELS if m.startswith("vllm-")]:
 for model in [m for m in AVAIL_LLM_MODELS if m.startswith("ollama-")]:
     from .bridge_ollama import predict_no_ui_long_connection as ollama_noui
     from .bridge_ollama import predict as ollama_ui
+
     break
 for model in [m for m in AVAIL_LLM_MODELS if m.startswith("ollama-")]:
     # 为了更灵活地接入ollama多模型管理界面，设计了此接口，例子：AVAIL_LLM_MODELS = ["ollama-phi3(max_token=6666)"]
@@ -1033,14 +1052,14 @@ for model in [m for m in AVAIL_LLM_MODELS if m.startswith("ollama-")]:
     })
 
 # -=-=-=-=-=-=- azure模型对齐支持 -=-=-=-=-=-=-
-AZURE_CFG_ARRAY = get_conf("AZURE_CFG_ARRAY") # <-- 用于定义和切换多个azure模型 -->
+AZURE_CFG_ARRAY = get_conf("AZURE_CFG_ARRAY")  # <-- 用于定义和切换多个azure模型 -->
 if len(AZURE_CFG_ARRAY) > 0:
     for azure_model_name, azure_cfg_dict in AZURE_CFG_ARRAY.items():
         # 可能会覆盖之前的配置，但这是意料之中的
         if not azure_model_name.startswith('azure'):
             raise ValueError("AZURE_CFG_ARRAY中配置的模型必须以azure开头")
         endpoint_ = azure_cfg_dict["AZURE_ENDPOINT"] + \
-            f'openai/deployments/{azure_cfg_dict["AZURE_ENGINE"]}/chat/completions?api-version=2023-05-15'
+                    f'openai/deployments/{azure_cfg_dict["AZURE_ENGINE"]}/chat/completions?api-version=2023-05-15'
         model_info.update({
             azure_model_name: {
                 "fn_with_ui": chatgpt_ui,
@@ -1048,7 +1067,7 @@ if len(AZURE_CFG_ARRAY) > 0:
                 "endpoint": endpoint_,
                 "azure_api_key": azure_cfg_dict["AZURE_API_KEY"],
                 "max_token": azure_cfg_dict["AZURE_MODEL_MAX_TOKEN"],
-                "tokenizer": tokenizer_gpt35,   # tokenizer只用于粗估token数量
+                "tokenizer": tokenizer_gpt35,  # tokenizer只用于粗估token数量
                 "token_cnt": get_token_num_gpt35,
             }
         })
@@ -1069,17 +1088,21 @@ def LLM_CATCH_EXCEPTION(f):
     """
     装饰器函数，将错误显示出来
     """
-    def decorated(inputs:str, llm_kwargs:dict, history:list, sys_prompt:str, observe_window:list, console_slience:bool):
+
+    def decorated(inputs: str, llm_kwargs: dict, history: list, sys_prompt: str, observe_window: list,
+                  console_slience: bool):
         try:
             return f(inputs, llm_kwargs, history, sys_prompt, observe_window, console_slience)
         except Exception as e:
             tb_str = '\n```\n' + trimmed_format_exc() + '\n```\n'
             observe_window[0] = tb_str
             return tb_str
+
     return decorated
 
 
-def predict_no_ui_long_connection(inputs:str, llm_kwargs:dict, history:list, sys_prompt:str, observe_window:list=[], console_slience:bool=False):
+def predict_no_ui_long_connection(inputs: str, llm_kwargs: dict, history: list, sys_prompt: str,
+                                  observe_window: list = [], console_slience: bool = False):
     """
     发送至LLM，等待回复，一次性完成，不显示中间过程。但内部（尽可能地）用stream的方法避免中途网线被掐。
     inputs：
@@ -1109,7 +1132,7 @@ def predict_no_ui_long_connection(inputs:str, llm_kwargs:dict, history:list, sys
         n_model = len(models)
 
         window_len = len(observe_window)
-        assert window_len==3
+        assert window_len == 3
         window_mutex = [["", time.time(), ""] for _ in range(n_model)] + [True]
 
         futures = []
@@ -1118,7 +1141,8 @@ def predict_no_ui_long_connection(inputs:str, llm_kwargs:dict, history:list, sys
             method = model_info[model]["fn_without_ui"]
             llm_kwargs_feedin = copy.deepcopy(llm_kwargs)
             llm_kwargs_feedin['llm_model'] = model
-            future = executor.submit(LLM_CATCH_EXCEPTION(method), inputs, llm_kwargs_feedin, history, sys_prompt, window_mutex[i], console_slience)
+            future = executor.submit(LLM_CATCH_EXCEPTION(method), inputs, llm_kwargs_feedin, history, sys_prompt,
+                                     window_mutex[i], console_slience)
             futures.append(future)
 
         def mutex_manager(window_mutex, observe_window):
@@ -1131,8 +1155,8 @@ def predict_no_ui_long_connection(inputs:str, llm_kwargs:dict, history:list, sys
                 # 观察窗（window）
                 chat_string = []
                 for i in range(n_model):
-                    color = colors[i%len(colors)]
-                    chat_string.append( f"【{str(models[i])} 说】: <font color=\"{color}\"> {window_mutex[i][0]} </font>" )
+                    color = colors[i % len(colors)]
+                    chat_string.append(f"【{str(models[i])} 说】: <font color=\"{color}\"> {window_mutex[i][0]} </font>")
                 res = '<br/><br/>\n\n---\n\n'.join(chat_string)
                 # # # # # # # # # # #
                 observe_window[0] = res
@@ -1149,16 +1173,19 @@ def predict_no_ui_long_connection(inputs:str, llm_kwargs:dict, history:list, sys
             time.sleep(1)
 
         for i, future in enumerate(futures):  # wait and get
-            color = colors[i%len(colors)]
-            return_string_collect.append( f"【{str(models[i])} 说】: <font color=\"{color}\"> {future.result()} </font>" )
+            color = colors[i % len(colors)]
+            return_string_collect.append(f"【{str(models[i])} 说】: <font color=\"{color}\"> {future.result()} </font>")
 
-        window_mutex[-1] = False # stop mutex thread
+        window_mutex[-1] = False  # stop mutex thread
         res = '<br/><br/>\n\n---\n\n'.join(return_string_collect)
         return res
+
 
 # 根据基础功能区 ModelOverride 参数调整模型类型，用于 `predict` 中
 import importlib
 import core_functional
+
+
 def execute_model_override(llm_kwargs, additional_fn, method):
     functional = core_functional.get_core_functions()
     if (additional_fn in functional) and 'ModelOverride' in functional[additional_fn]:
@@ -1174,8 +1201,9 @@ def execute_model_override(llm_kwargs, additional_fn, method):
     # 默认返回原参数
     return llm_kwargs, additional_fn, method
 
-def predict(inputs:str, llm_kwargs:dict, plugin_kwargs:dict, chatbot,
-            history:list=[], system_prompt:str='', stream:bool=True, additional_fn:str=None):
+
+def predict(inputs: str, llm_kwargs: dict, plugin_kwargs: dict, chatbot,
+            history: list = [], system_prompt: str = '', stream: bool = True, additional_fn: str = None):
     """
     发送至LLM，流式获取输出。
     用于基础的对话功能。
@@ -1197,8 +1225,7 @@ def predict(inputs:str, llm_kwargs:dict, plugin_kwargs:dict, chatbot,
 
     method = model_info[llm_kwargs['llm_model']]["fn_with_ui"]  # 如果这里报错，检查config中的AVAIL_LLM_MODELS选项
 
-    if additional_fn: # 根据基础功能区 ModelOverride 参数调整模型类型
+    if additional_fn:  # 根据基础功能区 ModelOverride 参数调整模型类型
         llm_kwargs, additional_fn, method = execute_model_override(llm_kwargs, additional_fn, method)
 
     yield from method(inputs, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, stream, additional_fn)
-

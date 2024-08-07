@@ -1,4 +1,5 @@
 import re
+
 mapping_dic = {
     # "qianfan": "qianfan（文心一言大模型）",
     # "zhipuai": "zhipuai（智谱GLM4超级模型🔥）",
@@ -10,15 +11,18 @@ rev_mapping_dic = {}
 for k, v in mapping_dic.items():
     rev_mapping_dic[v] = k
 
+
 def map_model_to_friendly_names(m):
     if m in mapping_dic:
         return mapping_dic[m]
     return m
 
+
 def map_friendly_names_to_model(m):
     if m in rev_mapping_dic:
         return rev_mapping_dic[m]
     return m
+
 
 def read_one_api_model_name(model: str):
     """return real model name and max_token.
